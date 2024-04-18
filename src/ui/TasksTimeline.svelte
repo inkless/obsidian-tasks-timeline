@@ -34,10 +34,13 @@
 			dateString: moment(date, "YYYY-MM-DD").format(dateFormat),
 			tasks: groupByDate[date],
 		}));
-		orderedTaskGroup.push({
-			dateString: "Unplanned",
-			tasks: groupByDate["unplanned"],
-		});
+
+		if (groupByDate["unplanned"]) {
+		  orderedTaskGroup.push({
+			  dateString: "Unplanned",
+			  tasks: groupByDate["unplanned"],
+		  });
+		}
 
 		return orderedTaskGroup;
   }
