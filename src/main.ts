@@ -18,11 +18,9 @@ export default class TaskTimelinePlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		console.log("Settings", this.settings);
 
 		obsidianApp.set(this.app);
 		this.registerView(TIMELINE_VIEW, (leaf) => {
-			console.log("registerView");
 			const view = new TasksTimelineView(leaf);
 			view.onUpdateSettings(this.settings);
 			settingsStore.set(this.settings);
@@ -72,7 +70,6 @@ export default class TaskTimelinePlugin extends Plugin {
 			.getLeavesOfType(TIMELINE_VIEW)
 			.first();
 		if (timelineLeaf) {
-			console.log("TimelineTaskView already exists");
 			this.app.workspace.revealLeaf(timelineLeaf);
 			return;
 		}

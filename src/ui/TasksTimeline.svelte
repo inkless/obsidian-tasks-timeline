@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { settings, obsidianApp, tasksList } from 'src/store';
+  import { settings, tasksList } from 'src/store';
   import moment from "moment";
   import { compareByDate } from "src/utils";
   import type { Task } from "src/typings";
 	import DayView from './DayView.svelte';
-
-  console.log('settings', $settings);
-  console.log('obsidianApp', $obsidianApp);
 
   function getTaskGroupByDate(list: Task[], dateFormat: string) {
 		const groupByDate = list.reduce<Record<string, Task[]>>(
@@ -42,7 +39,6 @@
 			tasks: groupByDate["unplanned"],
 		});
 
-    console.log('recompute tasks', orderedTaskGroup);
 		return orderedTaskGroup;
   }
   $: ({ dateFormat } = $settings)

@@ -34,8 +34,7 @@
   font-weight: bold;
   text-align: center;
   margin: 10px 5px;
-  border-radius: 10px;
-  cursor: pointer;
+  border-bottom: none;
 }
 
 .cards {

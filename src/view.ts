@@ -1,8 +1,9 @@
 import { ItemView, Notice, WorkspaceLeaf, type EventRef } from "obsidian";
+import moment from "moment";
 
 import TasksTimelineComponent from "./ui/TasksTimeline.svelte";
 import { tasksList } from "./store";
-import type { Task, TasksPlugin } from "./typings";
+import { StatusType, type Task, type TasksPlugin } from "./typings";
 import { DEFAULT_SETTINGS, type TaskTimelinePluginSettings } from "./settings";
 import { compareByDate } from "./utils";
 
@@ -16,8 +17,6 @@ export class TasksTimelineView extends ItemView {
 
 	constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
-
-		console.log("constructor");
 
 		this.tasksPlugin = (this.app as any).plugins.plugins[
 			"obsidian-tasks-plugin"
@@ -37,8 +36,6 @@ export class TasksTimelineView extends ItemView {
 	}
 
 	async onOpen() {
-		console.log("open tasks-timeline-view");
-
 		if (!this.tasksPlugin) {
 			new Notice("Please install Obsidian Tasks Plugin");
 			return;
@@ -60,7 +57,6 @@ export class TasksTimelineView extends ItemView {
 
 	async onClose() {
 		this.component.$destroy();
-		console.log("close");
 		if (this.handleRef) {
 			this.tasksPlugin.cache.events.off(this.handleRef);
 		}
@@ -73,8 +69,28 @@ export class TasksTimelineView extends ItemView {
 	}
 
 	private getTasks() {
-		const tasks = [...this.tasksPlugin.getTasks()];
-		console.log("view tasks", tasks[0].description);
+		const today = moment().startOf("day");
+		const tasks = this.tasksPlugin.getTasks().filter((t) => {
+			if (
+				t.status.type === StatusType.EMPTY ||
+				t.status.type === StatusType.NON_TASK
+			) {
+				return false;
+			}
+			if (
+				t.status.type === StatusType.DONE &&
+				compareByDate(t.doneDate, today) === -1
+			) {
+				return false;
+			}
+			if (
+				t.status.type === StatusType.CANCELLED &&
+				compareByDate(t.cancelledDate, today) === -1
+			) {
+				return false;
+			}
+			return true;
+		});
 		tasks.sort((a, b) => compareByDate(a.happens.moment, b.happens.moment));
 		tasks.sort((a, b) => Number(a.priority) - Number(b.priority));
 		tasks.sort((a, b) => (a.status.type > b.status.type ? -1 : 1));
