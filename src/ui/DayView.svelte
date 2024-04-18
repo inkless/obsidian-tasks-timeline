@@ -10,6 +10,7 @@
   let filter: string;
 
   function getFilteredTasks(filter: string, tasks: Task[]) {
+    if (!tasks) { return []; }
     switch(filter) {
       case 'overdue':
         return tasks.filter(task => task.due.category.name === 'Overdue')
