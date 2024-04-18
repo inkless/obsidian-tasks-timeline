@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-tasks-timeline",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "This is a tasks timeline plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
 	"scripts": {
