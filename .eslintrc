@@ -8,11 +8,22 @@
     "extends": [
       "eslint:recommended",
       "plugin:@typescript-eslint/eslint-recommended",
-      "plugin:@typescript-eslint/recommended"
+      "plugin:@typescript-eslint/recommended",
+      "plugin:svelte/recommended"
     ], 
     "parserOptions": {
-        "sourceType": "module"
+      "sourceType": "module",
+      "extraFileExtensions": [".svelte"]
     },
+    "overrides": [
+      {
+        "files": ["*.svelte"],
+        "processor": "svelte-eslint-parser",
+        "parserOptions": {
+            "parser": "@typescript-eslint/parser"
+        }
+      }
+    ],
     "rules": {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],

@@ -1,0 +1,1 @@
+<svg stroke-linejoin="round" stroke-linecap="round" stroke-width="2" stroke="currentColor" fill="none" viewBox="0 0 24 24" height="24" width="24" xmlns="http://www.w3.org/2000/svg"><circle r="10" cy="12" cx="12"></circle><line y2="15" x2="9" y1="9" x1="15"></line><line y2="15" x2="15" y1="9" x1="9"></line></svg>
