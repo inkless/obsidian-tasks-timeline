@@ -13,7 +13,9 @@
 
   export let task: Task;
 
-  type TaskType = 'overdue' | 'cancelled' | 'done' | 'in_progress' | 'todo';
+  $: overdue = task.due.category.name === 'Overdue';
+
+  type TaskType = 'cancelled' | 'done' | 'in_progress' | 'todo';
 
   function getTaskType(task: Task): TaskType {
     if (task.status.type === StatusType.DONE) {
@@ -28,10 +30,6 @@
       return 'in_progress';
     }
 
-    if (task.due.category.name === 'Overdue') {
-      return 'overdue';
-    }
-
     return 'todo';
   }
 
@@ -43,10 +41,13 @@
         return Cancel;
       case 'in_progress':
         return HalfCircle;
-      case 'overdue':
-        return WarningCircle;
       default:
-        return Circle;
+        {
+          if (overdue) {
+            return WarningCircle;
+          }
+          return Circle;
+        }
     }
   }
 
@@ -56,7 +57,7 @@
 
 </script>
 
-<div class="task {taskType}">
+<div class="task {taskType}" class:overdue>
   <div class="timeline">
     <button class="icon" on:click={() => toggleTask($obsidianApp, task)}>
       <svelte:component this={taskIcon} />
@@ -229,12 +230,7 @@ button.icon {
   margin-left: 2px;
 }
 
-.overdue .timeline :global(svg) :global(line) {
-  stroke: #ff375f;
-  stroke-width: 2.5px;
-}
-
-.overdue .relative {
+.overdue .relative, .overdue .relative .icon {
   color: #ff375f;
 }
 
@@ -242,10 +238,7 @@ button.icon {
   text-decoration: line-through;
 }
 
-.cancelled .icon {
-  color: var(--checkbox-border-color);
-}
-.cancelled .content {
+.cancelled .icon, .cancelled .content {
   color: var(--checkbox-border-color);
 }
 
@@ -254,7 +247,7 @@ button.icon {
 }
 
 .in_progress .timeline .icon {
-  stroke: var(--interactive-accent);
+  color: var(--interactive-accent);
 }
 </style>
 
