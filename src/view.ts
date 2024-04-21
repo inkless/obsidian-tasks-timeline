@@ -3,7 +3,7 @@ import moment from "moment";
 
 import TasksTimelineComponent from "./ui/TasksTimeline.svelte";
 import { tasksList } from "./store";
-import { StatusType, type Task, type TasksPlugin } from "./typings";
+import { StatusType, type TasksPlugin } from "./typings";
 import { DEFAULT_SETTINGS, type TaskTimelinePluginSettings } from "./settings";
 import { compareByDate } from "./utils";
 
@@ -13,6 +13,7 @@ export class TasksTimelineView extends ItemView {
 	component!: TasksTimelineComponent;
 	tasksPlugin: TasksPlugin;
 	handleRef?: EventRef;
+	reloadTimeout?: NodeJS.Timeout;
 	settings = DEFAULT_SETTINGS;
 
 	constructor(leaf: WorkspaceLeaf) {
@@ -53,12 +54,18 @@ export class TasksTimelineView extends ItemView {
 				variable: 1,
 			},
 		});
+
+		this.reloadAtMidnight();
 	}
 
 	async onClose() {
 		this.component.$destroy();
 		if (this.handleRef) {
 			this.tasksPlugin.cache.events.off(this.handleRef);
+		}
+
+		if (this.reloadTimeout) {
+			clearTimeout(this.reloadTimeout);
 		}
 	}
 
@@ -99,5 +106,15 @@ export class TasksTimelineView extends ItemView {
 
 	private handleCacheUpdate() {
 		tasksList.set(this.getTasks());
+	}
+
+	private reloadAtMidnight() {
+		const midnight = moment().endOf("day");
+		const diff = midnight.diff(moment()) + 2000; // add some buffers
+
+		this.reloadTimeout = setTimeout(() => {
+			this.handleCacheUpdate();
+			this.reloadAtMidnight();
+		}, diff);
 	}
 }
