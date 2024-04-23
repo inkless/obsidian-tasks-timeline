@@ -45,13 +45,13 @@ export class TasksTimelineView extends ItemView {
 		tasksList.set(this.getTasks());
 
 		this.handleRef = this.tasksPlugin.cache.events.onCacheUpdate(
-			this.handleCacheUpdate.bind(this),
+			this.refreshTasks.bind(this),
 		);
 
 		this.component = new TasksTimelineComponent({
 			target: this.contentEl,
 			props: {
-				variable: 1,
+				plugin: this,
 			},
 		});
 
@@ -72,6 +72,11 @@ export class TasksTimelineView extends ItemView {
 	onUpdateSettings(settings: TaskTimelinePluginSettings) {
 		this.settings = settings;
 
+		tasksList.set(this.getTasks());
+	}
+
+	refreshTasks() {
+		console.log("Refresh tasks");
 		tasksList.set(this.getTasks());
 	}
 
@@ -104,16 +109,12 @@ export class TasksTimelineView extends ItemView {
 		return tasks;
 	}
 
-	private handleCacheUpdate() {
-		tasksList.set(this.getTasks());
-	}
-
 	private reloadAtMidnight() {
 		const midnight = moment().endOf("day");
 		const diff = midnight.diff(moment()) + 2000; // add some buffers
 
 		this.reloadTimeout = setTimeout(() => {
-			this.handleCacheUpdate();
+			this.refreshTasks();
 			this.reloadAtMidnight();
 		}, diff);
 	}

@@ -4,6 +4,7 @@
   import { compareByDate } from "src/utils";
   import type { Task } from "src/typings";
 	import DayView from './DayView.svelte';
+	import type { TasksTimelineView } from 'src/view';
 
   function getTaskGroupByDate(list: Task[], dateFormat: string) {
 		const groupByDate = list.reduce<Record<string, Task[]>>(
@@ -46,17 +47,26 @@
   }
   $: ({ dateFormat } = $settings)
   $: tasksGroup = getTaskGroupByDate($tasksList, dateFormat)
+
+  export let plugin: TasksTimelineView;
 </script>
 
 <div>
+  <div class="header"><button on:click={() => plugin.refreshTasks()}>↻</button></div>
   {#each tasksGroup as {tasks, dateString}, i}
     <DayView tasks={tasks} title={dateString} today={i===0} />
   {/each}
-
-  <ul>
-
-  </ul>
 </div>
 
 <style>
+.header {
+  display: flex;
+  flex-direction: row-reverse;
+  position: relative;
+}
+
+.header button {
+  font-size: var(--font-ui-medium);
+  position: absolute;
+}
 </style>

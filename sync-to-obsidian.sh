@@ -10,17 +10,18 @@ if [ -z "$dest_dir" ]; then
     exit 1
 fi
 
+path_to_watch=$source_dir/main.js
 
 # Function to copy files 
 sync_files() {
-    echo "Copying $source_dir/main.js to $dest_dir"
-    cp "$source_dir/main.js" "$dest_dir"
+    echo "Copying $path_to_watch to $dest_dir"
+    cp "$path_to_watch" "$dest_dir"
 }
 
-echo "Watching $source_dir/main.js"
+echo "Watching $path_to_watch"
 
-# Main loop to watch for file changes
-while inotifywait -e modify "$source_dir/main.js"; do
+# Start watching the file for changes
+fswatch -o "$path_to_watch" | while read -r
+do
     sync_files
 done
-
