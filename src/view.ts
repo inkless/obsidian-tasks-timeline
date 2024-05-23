@@ -97,7 +97,8 @@ export class TasksTimelineView extends ItemView {
 			}
 			if (
 				t.status.type === StatusType.CANCELLED &&
-				compareByDate(t.cancelledDate, today) === -1
+				(compareByDate(t.cancelledDate, today) === -1 ||
+					!t.cancelledDate)
 			) {
 				return false;
 			}
