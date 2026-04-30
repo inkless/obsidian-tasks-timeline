@@ -1,8 +1,8 @@
 <script lang="ts">
   export let filter: string;
   export let overdueCount: number;
-  export let todoCount: number;
-  export let unplannedCount: number;
+  export let activeCount: number;
+  export let highPriorityCount: number;
 
   function clickFilter(f: string) {
     filter = filter === f ? '' : f;
@@ -12,17 +12,17 @@
 <div class="today">
   <h2 class="header">Today</h2>
   <div class="cards">
-    <button class="card" class:active={filter==='todo'} on:click={() => clickFilter('todo')}>
-      <div class="count">{todoCount}</div>
-      <div class="label">To Do</div>
+    <button class="card" class:active={filter==='high-priority'} on:click={() => clickFilter('high-priority')}>
+      <div class="count">{highPriorityCount}</div>
+      <div class="label">High Priority</div>
     </button>
     <button class="card" class:active={filter==='overdue'} on:click={() => clickFilter('overdue')}>
       <div class="count">{overdueCount}</div>
       <div class="label">Overdue</div>
     </button>
-    <button class="card" class:active={filter==='unplanned'} on:click={() => clickFilter('unplanned')}>
-      <div class="count">{unplannedCount}</div>
-      <div class="label">Unplanned</div>
+    <button class="card" class:active={filter==='active'} on:click={() => clickFilter('active')}>
+      <div class="count">{activeCount}</div>
+      <div class="label">Active</div>
     </button>
   </div>
 

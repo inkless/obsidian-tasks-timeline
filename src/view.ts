@@ -9,6 +9,10 @@ import { compareByDate } from "./utils";
 
 export const TIMELINE_VIEW = "tasks-timeline-view";
 
+const isCompleted = (t: { status: { type: StatusType } }) =>
+	t.status.type === StatusType.DONE ||
+	t.status.type === StatusType.CANCELLED;
+
 export class TasksTimelineView extends ItemView {
 	component!: TasksTimelineComponent;
 	tasksPlugin: TasksPlugin;
@@ -114,9 +118,13 @@ export class TasksTimelineView extends ItemView {
 			}
 			return true;
 		});
+		// Last sort wins; earlier sorts act as tiebreakers (Array.sort is stable).
+		// Final order: active before completed, then by priority (highest first),
+		// then by status type, then by date.
 		tasks.sort((a, b) => compareByDate(a.happens.moment, b.happens.moment));
-		tasks.sort((a, b) => Number(a.priority) - Number(b.priority));
 		tasks.sort((a, b) => (a.status.type > b.status.type ? -1 : 1));
+		tasks.sort((a, b) => Number(a.priority) - Number(b.priority));
+		tasks.sort((a, b) => Number(isCompleted(a)) - Number(isCompleted(b)));
 		return tasks;
 	}
 

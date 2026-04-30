@@ -1,5 +1,6 @@
 import type { App, TFile } from "obsidian";
 import { MarkdownView, Notice } from "obsidian";
+import type { Moment } from "moment";
 import type { Task } from "./typings";
 
 export async function openTaskFile(app: App, task: Task) {
@@ -62,6 +63,36 @@ export async function toggleTask(app: App, task: Task) {
 		const lines = data.split("\n");
 		if (task.lineNumber >= lines.length) return data;
 		lines.splice(task.lineNumber, 1, ...newLines);
+		return lines.join("\n");
+	});
+}
+
+const EMOJI_DUE_RE = /📅\s*\d{4}-\d{2}-\d{2}/;
+const FIELD_DUE_RE = /\[due::\s*\d{4}-\d{2}-\d{2}\s*\]/;
+
+function setDueDateInLine(line: string, isoDate: string): string {
+	if (EMOJI_DUE_RE.test(line)) {
+		return line.replace(EMOJI_DUE_RE, `📅 ${isoDate}`);
+	}
+	if (FIELD_DUE_RE.test(line)) {
+		return line.replace(FIELD_DUE_RE, `[due:: ${isoDate}]`);
+	}
+	return `${line.replace(/\s+$/, "")} 📅 ${isoDate}`;
+}
+
+export async function postponeTask(app: App, task: Task, newDate: Moment) {
+	const file = app.vault.getAbstractFileByPath(task.file.path) as
+		| TFile
+		| null;
+	if (!file) return;
+	const isoDate = newDate.format("YYYY-MM-DD");
+	await app.vault.process(file, (data) => {
+		const lines = data.split("\n");
+		if (task.lineNumber >= lines.length) return data;
+		lines[task.lineNumber] = setDueDateInLine(
+			lines[task.lineNumber],
+			isoDate,
+		);
 		return lines.join("\n");
 	});
 }

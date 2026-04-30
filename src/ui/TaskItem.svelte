@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Menu } from 'obsidian';
+  import moment, { type Moment } from 'moment';
   import { StatusType, type Task } from "src/typings";
   import WarningCircle from 'src/assets/WarningCircle.svelte';
   import Circle from 'src/assets/Circle.svelte';
@@ -7,11 +9,57 @@
   import Cancel from 'src/assets/Cancel.svelte';
   import Calendar from 'src/assets/Calendar.svelte';
   import File from 'src/assets/File.svelte';
+  import Forward from 'src/assets/Forward.svelte';
 	import { PRIORITY_SYMBOLS } from "src/constants";
-	import { toggleTask, editTask, openTaskFile } from "src/commands";
+	import { toggleTask, editTask, openTaskFile, postponeTask } from "src/commands";
 	import { obsidianApp } from 'src/store';
 
   export let task: Task;
+
+  function showPostponeMenu(evt: MouseEvent) {
+    evt.preventDefault();
+    evt.stopPropagation();
+
+    const today = moment().startOf('day');
+    const due = task.dueDate ? moment(task.dueDate).startOf('day') : null;
+    const base = due && due.isAfter(today) ? due.clone() : today.clone();
+    const fmt = (d: Moment) => d.format('ddd Do MMM');
+
+    const menu = new Menu();
+
+    const tomorrow = today.clone().add(1, 'day');
+    menu.addItem((i) => i
+      .setTitle(`Due today, on ${fmt(today)}`)
+      .onClick(() => postponeTask($obsidianApp, task, today.clone())));
+    menu.addItem((i) => i
+      .setTitle(`Due tomorrow, on ${fmt(tomorrow)}`)
+      .onClick(() => postponeTask($obsidianApp, task, tomorrow)));
+
+    menu.addSeparator();
+    for (const n of [2, 3, 4, 5, 6]) {
+      const d = base.clone().add(n, 'days');
+      menu.addItem((i) => i
+        .setTitle(`Postpone due date by ${n} days, to ${fmt(d)}`)
+        .onClick(() => postponeTask($obsidianApp, task, d)));
+    }
+
+    menu.addSeparator();
+    for (const n of [1, 2, 3, 4]) {
+      const d = base.clone().add(n, 'weeks');
+      const label = n === 1 ? 'a week' : `${n} weeks`;
+      menu.addItem((i) => i
+        .setTitle(`Postpone due date by ${label}, to ${fmt(d)}`)
+        .onClick(() => postponeTask($obsidianApp, task, d)));
+    }
+
+    menu.addSeparator();
+    const inMonth = base.clone().add(1, 'month');
+    menu.addItem((i) => i
+      .setTitle(`Postpone due date by a month, to ${fmt(inMonth)}`)
+      .onClick(() => postponeTask($obsidianApp, task, inMonth)));
+
+    menu.showAtMouseEvent(evt);
+  }
 
   $: overdue = task.due.category.name === 'Overdue';
 
@@ -66,7 +114,7 @@
   </div>
   <div class="lines">
     <a
-      href={task.file.path} 
+      href={task.file.path}
       class="internal-link"
       target="_blank"
       rel="noopener"
@@ -96,6 +144,13 @@
       </div>
     </div>
   </div>
+  <button
+    class="postpone"
+    aria-label="Postpone"
+    on:click={showPostponeMenu}
+  >
+    <Forward />
+  </button>
 </div>
 
 <style>
@@ -248,6 +303,38 @@ button.icon {
 
 .in_progress .timeline .icon {
   color: var(--interactive-accent);
+}
+
+button.postpone {
+  align-self: flex-start;
+  margin-top: 1px;
+  padding: 2px;
+  border: none;
+  box-shadow: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  height: 22px;
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.postpone:hover {
+  color: var(--text-normal);
+}
+
+button.postpone :global(svg) {
+  height: 16px;
+  width: 16px;
+  stroke-width: 1.75px;
+}
+
+.cancelled button.postpone,
+.done button.postpone {
+  display: none;
 }
 </style>
 
