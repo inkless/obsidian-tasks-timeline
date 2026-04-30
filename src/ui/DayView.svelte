@@ -6,8 +6,7 @@
   export let tasks: Task[];
   export let title: string;
   export let today: boolean;
-
-  let filter: string;
+  export let filter = '';
 
   function getFilteredTasks(filter: string, tasks: Task[]) {
     if (!tasks) { return []; }

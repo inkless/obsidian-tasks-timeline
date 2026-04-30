@@ -49,12 +49,17 @@
   $: tasksGroup = getTaskGroupByDate($tasksList, dateFormat)
 
   export let plugin: TasksTimelineView;
+
+  // When the today-card filter is active, only show today's group so the
+  // visible task list matches the count shown on the cards.
+  let filter = '';
+  $: visibleGroups = filter ? tasksGroup.slice(0, 1) : tasksGroup;
 </script>
 
 <div>
   <div class="header"><button on:click={() => plugin.refreshTasks()}>↻</button></div>
-  {#each tasksGroup as {tasks, dateString}, i (dateString)}
-    <DayView tasks={tasks} title={dateString} today={i===0} />
+  {#each visibleGroups as {tasks, dateString}, i (dateString)}
+    <DayView tasks={tasks} title={dateString} today={i===0} bind:filter />
   {/each}
 </div>
 
