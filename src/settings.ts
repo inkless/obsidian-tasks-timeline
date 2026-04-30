@@ -5,12 +5,14 @@ export interface TaskTimelinePluginSettings {
 	dateFormat: string;
 	dailyNotesFolder: string;
 	dailyNotesFormat: string;
+	includedPaths: string[];
 }
 
 export const DEFAULT_SETTINGS: TaskTimelinePluginSettings = {
 	dateFormat: "ddd, MMM D",
 	dailyNotesFolder: "",
 	dailyNotesFormat: "",
+	includedPaths: [],
 };
 
 export class TaskTimelineSettingTab extends PluginSettingTab {
@@ -60,6 +62,31 @@ export class TaskTimelineSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}),
 			);
+
+		new Setting(containerEl)
+			.setName("Included paths")
+			.setDesc(
+				TaskTimelineSettingTab.createFragmentWithHTML(
+					[
+						"<p>Only include tasks from these file paths (one per line). Leave empty to include all files.</p>",
+						"<p>Example:<br/>Affirm Tasks.md<br/>Personal Tasks.md<br/>Inbox.md</p>",
+					].join(""),
+				),
+			)
+			.addTextArea((text) => {
+				text.inputEl.rows = 5;
+				text.inputEl.cols = 30;
+				text
+					.setPlaceholder("Inbox.md")
+					.setValue(this.plugin.settings.includedPaths.join("\n"))
+					.onChange(async (value) => {
+						this.plugin.settings.includedPaths = value
+							.split("\n")
+							.map((p) => p.trim())
+							.filter((p) => p.length > 0);
+						await this.plugin.saveSettings();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Daily notes date format")

@@ -53,7 +53,7 @@
 
 <div>
   <div class="header"><button on:click={() => plugin.refreshTasks()}>↻</button></div>
-  {#each tasksGroup as {tasks, dateString}, i}
+  {#each tasksGroup as {tasks, dateString}, i (dateString)}
     <DayView tasks={tasks} title={dateString} today={i===0} />
   {/each}
 </div>

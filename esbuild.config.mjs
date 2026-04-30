@@ -1,5 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
+import { copyFileSync, existsSync, mkdirSync } from "fs";
+import { join } from "path";
 import builtins from "builtin-modules";
 import esbuildSvelte from "esbuild-svelte";
 import sveltePreprocess from "svelte-preprocess";
@@ -12,12 +14,35 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = process.argv[2] === "production";
 
+const obsidianPluginDir = process.env.OBSIDIAN_PLUGIN_DIR;
+
+const syncToObsidianPlugin = {
+	name: "sync-to-obsidian",
+	setup(build) {
+		build.onEnd((result) => {
+			if (!obsidianPluginDir || result.errors.length > 0) return;
+			if (!existsSync(obsidianPluginDir)) {
+				mkdirSync(obsidianPluginDir, { recursive: true });
+			}
+			for (const file of ["main.js", "manifest.json", "styles.css"]) {
+				copyFileSync(file, join(obsidianPluginDir, file));
+			}
+			console.log(`[sync] copied to ${obsidianPluginDir}`);
+		});
+	},
+};
+
+const buildTime = new Date().toISOString();
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
 	entryPoints: ["src/main.ts"],
 	bundle: true,
+	define: {
+		__BUILD_TIME__: JSON.stringify(buildTime),
+	},
 	external: [
 		"obsidian",
 		"electron",
@@ -45,6 +70,7 @@ const context = await esbuild.context({
 			compilerOptions: { css: "injected" },
 			preprocess: sveltePreprocess(),
 		}),
+		syncToObsidianPlugin,
 	],
 });
 

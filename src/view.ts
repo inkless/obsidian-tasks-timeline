@@ -44,8 +44,8 @@ export class TasksTimelineView extends ItemView {
 
 		tasksList.set(this.getTasks());
 
-		this.handleRef = this.tasksPlugin.cache.events.onCacheUpdate(
-			this.refreshTasks.bind(this),
+		this.handleRef = this.tasksPlugin.cache.events.onCacheUpdate(() =>
+			this.refreshTasks(),
 		);
 
 		this.component = new TasksTimelineComponent({
@@ -76,13 +76,23 @@ export class TasksTimelineView extends ItemView {
 	}
 
 	refreshTasks() {
-		console.log("Refresh tasks");
 		tasksList.set(this.getTasks());
 	}
 
 	private getTasks() {
 		const today = moment().startOf("day");
+		const includedPaths = this.settings.includedPaths;
+		const seen = new Set<string>();
 		const tasks = this.tasksPlugin.getTasks().filter((t) => {
+			const key = `${t.file.path}:${t.lineNumber}`;
+			if (seen.has(key)) return false;
+			seen.add(key);
+			if (
+				includedPaths.length > 0 &&
+				!includedPaths.includes(t.file.path)
+			) {
+				return false;
+			}
 			if (
 				t.status.type === StatusType.EMPTY ||
 				t.status.type === StatusType.NON_TASK

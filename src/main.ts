@@ -3,6 +3,8 @@ import { TIMELINE_VIEW, TasksTimelineView } from "./view";
 import { obsidianApp, settings as settingsStore } from "./store";
 import { DEFAULT_SETTINGS, TaskTimelineSettingTab } from "./settings";
 
+declare const __BUILD_TIME__: string;
+
 export default class TaskTimelinePlugin extends Plugin {
 	settings = { ...DEFAULT_SETTINGS };
 	debouncedUpdateViewSettings: () => void;
@@ -17,6 +19,7 @@ export default class TaskTimelinePlugin extends Plugin {
 	}
 
 	async onload() {
+		console.log(`[tasks-timeline] loaded build ${__BUILD_TIME__}`);
 		await this.loadSettings();
 
 		obsidianApp.set(this.app);

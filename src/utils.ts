@@ -1,15 +1,5 @@
 import type { Moment } from "moment";
 
-export const debounce = (fn: Function, ms = 300) => {
-	let timeoutId: NodeJS.Timeout;
-	return function (...args: unknown[]) {
-		clearTimeout(timeoutId);
-		timeoutId = setTimeout(() => {
-			fn(...args);
-		}, ms);
-	};
-};
-
 export function compareByDate(a: Moment | null, b: Moment | null): -1 | 0 | 1 {
 	if (a !== null && b === null) {
 		return -1;

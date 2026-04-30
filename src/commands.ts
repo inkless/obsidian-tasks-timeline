@@ -1,4 +1,4 @@
-import type { App } from "obsidian";
+import type { App, TFile } from "obsidian";
 import { MarkdownView, Notice } from "obsidian";
 import type { Task } from "./typings";
 
@@ -28,12 +28,40 @@ export async function editTask(app: App, task: Task) {
 	(app as any).commands.executeCommandById("obsidian-tasks-plugin:edit-task");
 }
 
+type TaskInstance = Task & {
+	toggle?: () => TaskInstance[];
+	toggleWithRecurrenceInUsersOrder?: () => TaskInstance[];
+	toFileLineString?: () => string;
+};
+
 export async function toggleTask(app: App, task: Task) {
-	const editor = await openTaskFile(app, task);
-	if (!editor) {
+	const file = app.vault.getAbstractFileByPath(task.file.path) as
+		| TFile
+		| null;
+	const t = task as TaskInstance;
+	const toggleFn = t.toggleWithRecurrenceInUsersOrder ?? t.toggle;
+
+	if (!file || typeof toggleFn !== "function" || !t.toFileLineString) {
+		new Notice(
+			"Tasks Timeline: cannot toggle — Tasks plugin internals changed",
+		);
+		console.error(
+			"[tasks-timeline] task instance methods unavailable",
+			task,
+		);
 		return;
 	}
-	(app as any).commands.executeCommandById(
-		"obsidian-tasks-plugin:toggle-done",
-	);
+
+	const newLines = toggleFn
+		.call(t)
+		.map((nt) => nt.toFileLineString?.())
+		.filter((line): line is string => typeof line === "string");
+	if (newLines.length === 0) return;
+
+	await app.vault.process(file, (data) => {
+		const lines = data.split("\n");
+		if (task.lineNumber >= lines.length) return data;
+		lines.splice(task.lineNumber, 1, ...newLines);
+		return lines.join("\n");
+	});
 }

@@ -36,7 +36,7 @@
 {/if}
 
 <div>
-{#each filteredTasks as task}
+{#each filteredTasks as task (`${task.file.path}:${task.lineNumber}`)}
   <TaskItem {task} />
 {/each}
 </div>
